@@ -1,0 +1,1 @@
+export { ScoutProgressPage } from './ScoutProgressPage';

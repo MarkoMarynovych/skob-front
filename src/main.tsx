@@ -1,39 +1,16 @@
-import { StrictMode } from "react"
-import { createRoot } from "react-dom/client"
-import "./index.css"
-import { Providers } from "./components/providers"
-import { createBrowserRouter, RouterProvider } from "react-router-dom"
-import App from "./App.tsx"
-import ErrorPage from "./pages/ErrorPage"
-import LoginPage from "./pages/LoginPage"
-import { ProtectedRoute } from "./pages/routeProtection/ProtectedRoute.tsx"
-import { PublicRoute } from "./pages/routeProtection/publicRoutes.tsx"
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import { App } from './app/App';
+import './app/styles/index.css';
 
-const router = createBrowserRouter([
-  {
-    path: "/",
-    element: (
-      <ProtectedRoute>
-        <App />
-      </ProtectedRoute>
-    ),
-    errorElement: <ErrorPage />,
-  },
-  {
-    path: "login",
-    element: (
-      <PublicRoute>
-        <LoginPage />
-      </PublicRoute>
-    ),
-  },
-]);
+const rootElement = document.getElementById('root');
 
+if (!rootElement) {
+  throw new Error('Root element not found');
+}
 
-createRoot(document.getElementById("root")!).render(
+createRoot(rootElement).render(
   <StrictMode>
-    <Providers>
-      <RouterProvider router={router} />
-    </Providers>
+    <App />
   </StrictMode>
-)
+);
