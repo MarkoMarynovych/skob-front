@@ -1,0 +1,1 @@
+export { KurinDetailsPage } from './KurinDetailsPage';
