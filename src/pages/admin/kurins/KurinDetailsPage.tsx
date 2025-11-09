@@ -22,6 +22,8 @@ import {
 } from '@nextui-org/react';
 import { useGetKurinDetailsQuery, useUpdateKurinMutation, useDeleteKurinMutation } from '~entities/kurin';
 import { useGetLiaisonListQuery } from '~entities/user/api';
+import { useGenerateInviteMutation } from '~entities/invite/api/inviteApi';
+import { InviteType } from '~entities/invite/model/types';
 import { MainLayout } from '~widgets/layout';
 import { ErrorMessage } from '~shared/ui';
 import { RootState } from '~app/store';
@@ -33,6 +35,9 @@ import {
   IconChevronRight,
   IconEdit,
   IconTrash,
+  IconUserPlus,
+  IconCopy,
+  IconCheck,
 } from '@tabler/icons-react';
 
 interface KurinDetailsPageProps {
@@ -51,8 +56,11 @@ export const KurinDetailsPage = ({ basePath, kurinId: propKurinId }: KurinDetail
   const [isEditNameOpen, setIsEditNameOpen] = useState(false);
   const [isChangeLiaisonOpen, setIsChangeLiaisonOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [isInviteForemanOpen, setIsInviteForemanOpen] = useState(false);
   const [newName, setNewName] = useState('');
   const [newLiaisonId, setNewLiaisonId] = useState('');
+  const [inviteLink, setInviteLink] = useState('');
+  const [isCopied, setIsCopied] = useState(false);
 
   const { data: kurin, isLoading, isError, error } = useGetKurinDetailsQuery(kurinId || '', {
     skip: !kurinId,
@@ -61,8 +69,10 @@ export const KurinDetailsPage = ({ basePath, kurinId: propKurinId }: KurinDetail
   const { data: liaisons } = useGetLiaisonListQuery();
   const [updateKurin, { isLoading: isUpdating }] = useUpdateKurinMutation();
   const [deleteKurin, { isLoading: isDeleting }] = useDeleteKurinMutation();
+  const [generateInvite, { isLoading: isGenerating }] = useGenerateInviteMutation();
 
   const isAdmin = user?.role === UserRole.ADMIN;
+  const isLiaison = user?.role === UserRole.LIAISON;
 
   const handleForemanClick = (foremanId: string) => {
     navigate(`${resolvedBasePath}/kurins/${kurinId}/foremen/${foremanId}`);
@@ -115,6 +125,31 @@ export const KurinDetailsPage = ({ basePath, kurinId: propKurinId }: KurinDetail
       } catch (err) {
         console.error('Failed to delete kurin:', err);
       }
+    }
+  };
+
+  const handleGenerateInvite = async () => {
+    if (kurinId) {
+      try {
+        const result = await generateInvite({
+          type: InviteType.FOREMAN,
+          contextId: kurinId,
+        }).unwrap();
+        setInviteLink(result.inviteLink);
+        setIsInviteForemanOpen(true);
+      } catch (err) {
+        console.error('Failed to generate invite:', err);
+      }
+    }
+  };
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(inviteLink);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    } catch (err) {
+      console.error('Failed to copy:', err);
     }
   };
 
@@ -228,7 +263,19 @@ export const KurinDetailsPage = ({ basePath, kurinId: propKurinId }: KurinDetail
         </Card>
 
         <div className="space-y-4">
-          <h2 className="text-2xl font-bold text-gray-900">Foremen</h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold text-gray-900">Foremen</h2>
+            {isLiaison && (
+              <Button
+                color="primary"
+                startContent={<IconUserPlus size={20} />}
+                onPress={handleGenerateInvite}
+                isLoading={isGenerating}
+              >
+                Invite Foreman
+              </Button>
+            )}
+          </div>
           {kurin.foremen && kurin.foremen.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {kurin.foremen.map((foreman) => (
@@ -376,6 +423,39 @@ export const KurinDetailsPage = ({ basePath, kurinId: propKurinId }: KurinDetail
               </Button>
               <Button color="danger" onPress={handleDelete} isLoading={isDeleting}>
                 Delete
+              </Button>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
+
+        {/* Invite Foreman Modal */}
+        <Modal isOpen={isInviteForemanOpen} onClose={() => setIsInviteForemanOpen(false)}>
+          <ModalContent>
+            <ModalHeader>Invite Foreman to {kurin?.name}</ModalHeader>
+            <ModalBody className="space-y-4">
+              <p className="text-sm text-gray-600">
+                Share this link with the person you want to invite as a Foreman. The link will expire in 7 days.
+              </p>
+              <div className="flex gap-2">
+                <Input
+                  value={inviteLink}
+                  readOnly
+                  className="flex-1"
+                  size="sm"
+                />
+                <Button
+                  color={isCopied ? 'success' : 'primary'}
+                  variant="flat"
+                  onPress={handleCopyLink}
+                  isIconOnly
+                >
+                  {isCopied ? <IconCheck size={18} /> : <IconCopy size={18} />}
+                </Button>
+              </div>
+            </ModalBody>
+            <ModalFooter>
+              <Button onPress={() => setIsInviteForemanOpen(false)}>
+                Done
               </Button>
             </ModalFooter>
           </ModalContent>

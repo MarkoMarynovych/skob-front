@@ -1,7 +1,6 @@
 import { Modal, ModalContent, ModalHeader, ModalBody, Button } from '@nextui-org/react';
 import { useState } from 'react';
 import { useUpdateUserMutation } from '~entities/user/api/userApi';
-import { useInitializeProbasMutation } from '~entities/proba/api/probaApi';
 import { toast } from 'react-hot-toast';
 
 interface SelectGenderModalProps {
@@ -12,7 +11,6 @@ interface SelectGenderModalProps {
 
 export const SelectGenderModal = ({ isOpen, userId, email }: SelectGenderModalProps) => {
   const [updateUser] = useUpdateUserMutation();
-  const [initializeProbas] = useInitializeProbasMutation();
   const [isLoading, setIsLoading] = useState(false);
 
   console.log('[SelectGenderModal] Rendered with:', { isOpen, userId, email });
@@ -25,11 +23,11 @@ export const SelectGenderModal = ({ isOpen, userId, email }: SelectGenderModalPr
       const updateResult = await updateUser({ email, data: { sex } }).unwrap();
       console.log('[SelectGenderModal] updateUser success:', updateResult);
 
-      console.log('[SelectGenderModal] Calling initializeProbas with userId:', userId);
-      const initResult = await initializeProbas(userId).unwrap();
-      console.log('[SelectGenderModal] initializeProbas success:', initResult);
-
       toast.success('Ваш профіль налаштовано! Завантаження даних...');
+
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     } catch (error) {
       console.error('[SelectGenderModal] Error:', error);
       toast.error('Виникла помилка. Спробуйте ще раз.');

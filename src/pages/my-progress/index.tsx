@@ -7,6 +7,7 @@ import { ProbaProgressWidget } from '~widgets/proba-progress';
 import { ErrorMessage } from '~shared/ui';
 import { UserRole } from '~entities/user/model/types';
 import { useGetMyGroupsQuery } from '~entities/group/api/groupApi';
+import { SelectGenderModal } from '~features/onboarding/select-gender';
 
 export const MyProgressPage = () => {
   const { user } = useSelector((state: RootState) => state.session);
@@ -19,6 +20,17 @@ export const MyProgressPage = () => {
           <Spinner size="lg" />
         </div>
       </MainLayout>
+    );
+  }
+
+  if (user && !user.sex) {
+    console.log('[MyProgressPage] User has no sex, showing SelectGenderModal');
+    return (
+      <SelectGenderModal
+        isOpen={true}
+        userId={user.id}
+        email={user.email}
+      />
     );
   }
 
