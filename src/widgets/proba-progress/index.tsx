@@ -69,7 +69,32 @@ export const ProbaProgressWidget = ({
     return [];
   };
 
+  const parseItemText = (text: string) => {
+    // Check if text contains sub-options (pattern: "text: А. option1; Б. option2; В. option3")
+    const colonIndex = text.lastIndexOf(':');
+    if (colonIndex === -1) return { mainText: text, subOptions: [] };
+
+    const beforeColon = text.slice(0, colonIndex + 1);
+    const afterColon = text.slice(colonIndex + 1).trim();
+
+    // Check if afterColon contains lettered sub-options (А., Б., В., etc.)
+    const subOptionPattern = /([А-ЯҐЄІЇа-яґєії])\.\s*([^;]+)/g;
+    const matches = [...afterColon.matchAll(subOptionPattern)];
+
+    if (matches.length >= 2) {
+      const subOptions = matches.map(match => ({
+        letter: match[1],
+        text: match[2].trim()
+      }));
+      return { mainText: beforeColon, subOptions };
+    }
+
+    return { mainText: text, subOptions: [] };
+  };
+
   const renderProbaItem = (item: ProbaItem, index: number) => {
+    const { mainText, subOptions } = parseItemText(item.text);
+
     return (
       <div key={item.id} className="flex flex-col gap-2 py-2">
         <div className="flex items-start gap-3">
@@ -92,8 +117,18 @@ export const ProbaProgressWidget = ({
           )}
           <div className="flex-1">
             <p className={`text-sm md:text-base ${item.isCompleted ? 'line-through text-gray-500' : ''}`}>
-              {item.text}
+              {mainText}
             </p>
+
+            {subOptions.length > 0 && (
+              <ul className="mt-2 ml-4 space-y-1">
+                {subOptions.map((option, idx) => (
+                  <li key={idx} className={`text-sm md:text-base ${item.isCompleted ? 'line-through text-gray-500' : ''}`}>
+                    <span className="font-medium">{option.letter}.</span> {option.text}
+                  </li>
+                ))}
+              </ul>
+            )}
 
             {item.isCompleted && (
               <div className="mt-2 flex flex-wrap gap-2 items-center">
