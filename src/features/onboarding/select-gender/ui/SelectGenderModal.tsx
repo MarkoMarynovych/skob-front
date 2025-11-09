@@ -13,23 +13,16 @@ export const SelectGenderModal = ({ isOpen, userId, email }: SelectGenderModalPr
   const [updateUser] = useUpdateUserMutation();
   const [isLoading, setIsLoading] = useState(false);
 
-  console.log('[SelectGenderModal] Rendered with:', { isOpen, userId, email });
-
   const handleGenderSelect = async (sex: 'MALE' | 'FEMALE') => {
-    console.log('[SelectGenderModal] Gender selected:', sex);
     setIsLoading(true);
     try {
-      console.log('[SelectGenderModal] Calling updateUser with:', { email, sex });
-      const updateResult = await updateUser({ email, data: { sex } }).unwrap();
-      console.log('[SelectGenderModal] updateUser success:', updateResult);
-
+      await updateUser({ email, data: { sex } }).unwrap();
       toast.success('Ваш профіль налаштовано! Завантаження даних...');
 
       setTimeout(() => {
         window.location.reload();
       }, 1000);
     } catch (error) {
-      console.error('[SelectGenderModal] Error:', error);
       toast.error('Виникла помилка. Спробуйте ще раз.');
       setIsLoading(false);
     }

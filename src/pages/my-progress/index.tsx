@@ -24,7 +24,6 @@ export const MyProgressPage = () => {
   }
 
   if (user && !user.sex) {
-    console.log('[MyProgressPage] User has no sex, showing SelectGenderModal');
     return (
       <SelectGenderModal
         isOpen={true}
