@@ -8,7 +8,7 @@ import { store } from '~app/store';
 import { router } from '~app/router';
 import { useGetMeQuery } from '~entities/auth/api/authApi';
 import { setCredentials, clearSession } from '~entities/session/model/sessionSlice';
-import { useAcceptInviteByTokenMutation } from '~entities/invite';
+import { useAcceptInviteByTokenMutation, useJoinGroupMutation } from '~entities/invite';
 import { ErrorBoundary } from '~shared/lib/ErrorBoundary';
 import { LoadingSpinner } from '~shared/ui/LoadingSpinner';
 
@@ -16,6 +16,7 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
   const { data: user, isLoading, isError, refetch } = useGetMeQuery(undefined, {
     refetchOnMountOrArgChange: true,
   });
+  const [joinGroup] = useJoinGroupMutation();
   const [acceptInvite] = useAcceptInviteByTokenMutation();
 
   useEffect(() => {
@@ -26,9 +27,16 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (pendingInviteToken) {
         localStorage.removeItem('pendingInviteToken');
 
-        acceptInvite(pendingInviteToken)
-          .unwrap()
-          .then((response) => {
+        const handleInvite = async () => {
+          try {
+            let response;
+
+            try {
+              response = await joinGroup(pendingInviteToken).unwrap();
+            } catch (groupError) {
+              response = await acceptInvite(pendingInviteToken).unwrap();
+            }
+
             if (response.groupName) {
               toast.success(`Successfully joined ${response.groupName}!`);
             } else if (response.kurinName) {
@@ -37,18 +45,20 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
               toast.success(response.message || 'Invitation accepted successfully!');
             }
             refetch();
-          })
-          .catch((err) => {
+          } catch (err) {
             const errorMessage = err && typeof err === 'object' && 'data' in err
               ? ((err as { data?: { message?: string } }).data?.message || 'Failed to accept invitation')
               : 'Failed to accept invitation';
             toast.error(errorMessage);
-          });
+          }
+        };
+
+        handleInvite();
       }
     } else if (isError) {
       store.dispatch(clearSession());
     }
-  }, [user, isError, acceptInvite, refetch]);
+  }, [user, isError, joinGroup, acceptInvite, refetch]);
 
   if (isLoading) {
     return <LoadingSpinner fullScreen />;

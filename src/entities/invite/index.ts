@@ -2,10 +2,6 @@ export {
   inviteApi,
   useGenerateInviteMutation,
   useAcceptInviteByTokenMutation,
-  useGetInviteDetailsQuery,
-  useAcceptInviteMutation,
-  useSendInviteMutation,
-  useGetForemansInvitesQuery,
   useJoinGroupMutation,
 } from './api/inviteApi';
 export {

@@ -44,14 +44,6 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: '/invites/accept/:hash',
-    element: (
-      <SuspenseWrapper>
-        <Pages.InviteAcceptPage />
-      </SuspenseWrapper>
-    ),
-  },
-  {
     path: '/join/:inviteToken',
     element: (
       <SuspenseWrapper>

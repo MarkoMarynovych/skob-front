@@ -12,10 +12,6 @@ export const ScoutProgressPage = lazy(() =>
   import('~pages/scout-progress').then(module => ({ default: module.ScoutProgressPage }))
 );
 
-export const InviteAcceptPage = lazy(() =>
-  import('~pages/invites/accept').then(module => ({ default: module.InviteAcceptPage }))
-);
-
 export const JoinPage = lazy(() =>
   import('~pages/join').then(module => ({ default: module.JoinPage }))
 );

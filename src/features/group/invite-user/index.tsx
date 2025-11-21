@@ -1,14 +1,18 @@
 import { useState } from 'react';
 import { Button, Input, Card, CardBody } from '@nextui-org/react';
-import { useSendInviteMutation } from '~entities/invite';
+import { useGenerateInviteMutation, InviteType } from '~entities/invite';
 import toast from 'react-hot-toast';
 import { IconSend, IconCopy, IconCheck } from '@tabler/icons-react';
 
-export const InviteToGroup = () => {
+interface InviteToGroupProps {
+  groupId: string;
+}
+
+export const InviteToGroup = ({ groupId }: InviteToGroupProps) => {
   const [email, setEmail] = useState('');
   const [inviteLink, setInviteLink] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-  const [sendInvite, { isLoading }] = useSendInviteMutation();
+  const [generateInvite, { isLoading }] = useGenerateInviteMutation();
 
   const validateEmail = (email: string): boolean => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -27,16 +31,18 @@ export const InviteToGroup = () => {
     }
 
     try {
-      const response = await sendInvite(email.trim()).unwrap();
-      const fullLink = response.inviteLink || `${window.location.origin}/invites/accept/${response.hash}`;
+      const response = await generateInvite({
+        type: InviteType.SCOUT,
+        contextId: groupId,
+      }).unwrap();
 
-      setInviteLink(fullLink);
-      toast.success('Invitation sent successfully!');
+      setInviteLink(response.inviteLink);
+      toast.success(`Invitation link generated! Share it with ${email.trim()}`);
       setEmail('');
     } catch (error) {
       const errorMessage = error && typeof error === 'object' && 'data' in error
-        ? ((error as { data?: { message?: string } }).data?.message || 'Failed to send invitation')
-        : 'Failed to send invitation';
+        ? ((error as { data?: { message?: string } }).data?.message || 'Failed to generate invitation')
+        : 'Failed to generate invitation';
       toast.error(errorMessage);
     }
   };

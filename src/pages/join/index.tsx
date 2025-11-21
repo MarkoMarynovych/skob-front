@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { Card, CardBody, Button } from '@nextui-org/react';
 import { RootState } from '~app/store';
-import { useAcceptInviteByTokenMutation } from '~entities/invite';
+import { useAcceptInviteByTokenMutation, useJoinGroupMutation } from '~entities/invite';
 import { LoadingSpinner, ErrorMessage } from '~shared/ui';
 import toast from 'react-hot-toast';
 import { IconAlertCircle, IconLogin } from '@tabler/icons-react';
@@ -12,8 +12,10 @@ export const JoinPage = () => {
   const { inviteToken } = useParams<{ inviteToken: string }>();
   const navigate = useNavigate();
   const { isAuthenticated } = useSelector((state: RootState) => state.session);
-  const [acceptInvite, { isLoading }] = useAcceptInviteByTokenMutation();
+  const [joinGroup, { isLoading: isJoiningGroup }] = useJoinGroupMutation();
+  const [acceptInvite, { isLoading: isAcceptingInvite }] = useAcceptInviteByTokenMutation();
   const [error, setError] = useState<string | null>(null);
+  const isLoading = isJoiningGroup || isAcceptingInvite;
 
   useEffect(() => {
     if (!inviteToken) {
@@ -30,7 +32,13 @@ export const JoinPage = () => {
 
     const acceptInviteHandler = async () => {
       try {
-        const response = await acceptInvite(inviteToken).unwrap();
+        let response;
+
+        try {
+          response = await joinGroup(inviteToken).unwrap();
+        } catch (groupError) {
+          response = await acceptInvite(inviteToken).unwrap();
+        }
 
         if (response.groupName) {
           toast.success(`Successfully joined ${response.groupName}!`);
@@ -50,7 +58,7 @@ export const JoinPage = () => {
     };
 
     acceptInviteHandler();
-  }, [inviteToken, isAuthenticated, navigate, acceptInvite]);
+  }, [inviteToken, isAuthenticated, navigate, joinGroup, acceptInvite]);
 
   if (!inviteToken) {
     return (
