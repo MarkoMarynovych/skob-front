@@ -1,4 +1,4 @@
-import { ReactNode, useEffect } from 'react';
+import { ReactNode, useEffect, useLayoutEffect, useState } from 'react';
 import { Provider } from 'react-redux';
 import { NextUIProvider } from '@nextui-org/react';
 import { RouterProvider } from 'react-router-dom';
@@ -18,11 +18,23 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
   });
   const [joinGroup] = useJoinGroupMutation();
   const [acceptInvite] = useAcceptInviteByTokenMutation();
+  const [isSessionReady, setIsSessionReady] = useState(false);
 
+  // Set credentials and mark session as ready BEFORE rendering children
+  useLayoutEffect(() => {
+    if (!isLoading) {
+      if (user && !isError) {
+        store.dispatch(setCredentials({ user }));
+      } else if (isError) {
+        store.dispatch(clearSession());
+      }
+      setIsSessionReady(true);
+    }
+  }, [user, isLoading, isError]);
+
+  // Handle pending invites after session is ready
   useEffect(() => {
-    if (user && !isError) {
-      store.dispatch(setCredentials({ user }));
-
+    if (isSessionReady && user && !isError) {
       const pendingInviteToken = localStorage.getItem('pendingInviteToken');
       if (pendingInviteToken) {
         localStorage.removeItem('pendingInviteToken');
@@ -55,12 +67,11 @@ const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         handleInvite();
       }
-    } else if (isError) {
-      store.dispatch(clearSession());
     }
-  }, [user, isError, joinGroup, acceptInvite, refetch]);
+  }, [isSessionReady, user, isError, joinGroup, acceptInvite, refetch]);
 
-  if (isLoading) {
+  // Don't render children until session state is determined and Redux is updated
+  if (isLoading || !isSessionReady) {
     return <LoadingSpinner fullScreen />;
   }
 

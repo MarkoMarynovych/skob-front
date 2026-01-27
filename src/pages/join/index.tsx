@@ -115,5 +115,13 @@ export const JoinPage = () => {
     );
   }
 
-  return null;
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+      <Card className="w-full max-w-md">
+        <CardBody className="p-8">
+          <LoadingSpinner message="Processing invitation..." />
+        </CardBody>
+      </Card>
+    </div>
+  );
 };
