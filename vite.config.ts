@@ -5,7 +5,7 @@ import compression from "vite-plugin-compression"
 
 export default defineConfig({
   publicDir: "public",
-  base: "./",
+  base: "/",
   plugins: [
     react(),
     compression({
