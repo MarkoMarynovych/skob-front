@@ -19,6 +19,12 @@ export interface Group {
   averageProgress?: number;
 }
 
+export interface CoForemanInGroup {
+  id: string;
+  name: string;
+  email: string;
+}
+
 export interface GroupDetails {
   id: string;
   name: string;
@@ -28,6 +34,7 @@ export interface GroupDetails {
     name: string;
     email: string;
   };
+  coForemen?: CoForemanInGroup[];
   scoutCount: number;
   averageProgress: number;
   scouts: ScoutInGroup[];

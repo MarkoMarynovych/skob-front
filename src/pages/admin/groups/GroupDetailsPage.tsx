@@ -127,11 +127,18 @@ export const GroupDetailsPage = ({ basePath }: GroupDetailsPageProps) => {
               <IconUsersGroup size={32} className="text-primary" />
               <div className="flex-1">
                 <h1 className="text-2xl font-bold">{group.name}</h1>
-                {group.foreman && (
-                  <p className="text-sm text-gray-600 mt-1">
-                    Foreman: {group.foreman.name}
-                  </p>
-                )}
+                {(() => {
+                  const names = [
+                    group.foreman?.name,
+                    ...(group.coForemen?.map((cf) => cf.name) ?? []),
+                  ].filter(Boolean);
+                  const label = names.length > 1 ? 'Foremen' : 'Foreman';
+                  return names.length > 0 ? (
+                    <p className="text-sm text-gray-600 mt-1">
+                      {label}: {names.join(', ')}
+                    </p>
+                  ) : null;
+                })()}
               </div>
             </div>
           </CardHeader>
