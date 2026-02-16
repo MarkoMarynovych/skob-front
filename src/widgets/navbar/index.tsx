@@ -3,6 +3,7 @@ import {
   Navbar,
   NavbarBrand,
   NavbarContent,
+  NavbarItem,
   NavbarMenuToggle,
   NavbarMenu,
   NavbarMenuItem,
@@ -73,6 +74,25 @@ export const AppNavbar = () => {
         <NavbarBrand>
           <p className="font-bold text-xl text-primary">Plast-Proba</p>
         </NavbarBrand>
+      </NavbarContent>
+
+      <NavbarContent className="hidden sm:flex gap-4" justify="center">
+        {visibleItems.map((item) => (
+          <NavbarItem key={item.path}>
+            <NavLink
+              to={item.path}
+              className={({ isActive }) =>
+                `text-sm ${
+                  isActive
+                    ? 'text-primary font-semibold'
+                    : 'text-foreground hover:text-primary'
+                }`
+              }
+            >
+              {item.label}
+            </NavLink>
+          </NavbarItem>
+        ))}
       </NavbarContent>
 
       <NavbarContent as="div" justify="end">
